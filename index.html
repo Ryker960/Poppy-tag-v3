@@ -1,1 +1,147 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Poppy Tag VR</title>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <style>
+    body { margin: 0; }
+    #start {
+      position: fixed;
+      z-index: 10;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      padding: 18px 30px;
+      font-size: 22px;
+      background: #e00024;
+      color: white;
+      border: 0;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<button id="start">ENTER VR</button>
+
+<a-scene
+  background="color: #20202a"
+  renderer="antialias: true"
+  physics="debug: false">
+
+  <a-entity light="type: ambient; intensity: 1"></a-entity>
+  <a-entity light="type: directional; intensity: 1"
+            position="2 5 3"></a-entity>
+
+  <!-- Floor -->
+  <a-box position="0 -0.15 0"
+         width="30" height="0.3" depth="30"
+         color="#444444"></a-box>
+
+  <!-- Test walls -->
+  <a-box position="0 2 -8"
+         width="16" height="4" depth="0.4"
+         color="#777777"></a-box>
+
+  <a-box position="-8 2 0"
+         width="0.4" height="4" depth="16"
+         color="#777777"></a-box>
+
+  <a-box position="8 2 0"
+         width="0.4" height="4" depth="16"
+         color="#777777"></a-box>
+
+  <!-- Player rig -->
+  <a-entity id="rig" position="0 0 0">
+
+    <a-camera position="0 1.6 0"
+              look-controls>
+    </a-camera>
+
+    <!-- Left VR controller -->
+    <a-entity id="leftHand"
+      laser-controls="hand: left"
+      hand-tracking-controls="hand: left"
+      visible="true">
+
+      <a-sphere radius="0.13"
+                color="#168cff"></a-sphere>
+    </a-entity>
+
+    <!-- Right VR controller -->
+    <a-entity id="rightHand"
+      laser-controls="hand: right"
+      hand-tracking-controls="hand: right"
+      visible="true">
+
+      <a-sphere radius="0.13"
+                color="#168cff"></a-sphere>
+    </a-entity>
+
+  </a-entity>
+
+</a-scene>
+
+<script>
+const rig = document.querySelector("#rig");
+const left = document.querySelector("#leftHand");
+const right = document.querySelector("#rightHand");
+
+let previousLeft = null;
+let previousRight = null;
+let velocity = new THREE.Vector3();
+
+function movement() {
+  const scene = document.querySelector("a-scene");
+
+  if (!scene.is("vr-mode")) {
+    requestAnimationFrame(movement);
+    return;
+  }
+
+  const leftPos = new THREE.Vector3();
+  const rightPos = new THREE.Vector3();
+
+  left.object3D.getWorldPosition(leftPos);
+  right.object3D.getWorldPosition(rightPos);
+
+  if (previousLeft && previousRight) {
+    const leftMove = leftPos.clone().sub(previousLeft);
+    const rightMove = rightPos.clone().sub(previousRight);
+
+    const push = leftMove.add(rightMove);
+
+    velocity.x -= push.x * 1.8;
+    velocity.z -= push.z * 1.8;
+  }
+
+  previousLeft = leftPos.clone();
+  previousRight = rightPos.clone();
+
+  velocity.y = 0;
+  velocity.multiplyScalar(0.97);
+
+  const pos = rig.object3D.position;
+  pos.add(velocity);
+
+  if (pos.y < 0) pos.y = 0;
+
+  requestAnimationFrame(movement);
+}
+
+document.querySelector("#start").addEventListener("click", async () => {
+  const scene = document.querySelector("a-scene");
+  await scene.enterVR();
+  document.querySelector("#start").style.display = "none";
+});
+
+document.querySelector("a-scene").addEventListener("loaded", () => {
+  movement();
+});
+</script>
+
+</body>
+</html>
+
