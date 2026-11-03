@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@0.0.10/builds/ammo.wasm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@4.2.3/dist/aframe-physics-system.min.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Poppy Tag VR</title>
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
@@ -27,6 +29,8 @@
 <button id="start">ENTER VR</button>
 
 <a-scene
+  physics="driver: ammo; debug: false"
+  renderer="antialias: true">
   background="color: #20202a"
   renderer="antialias: true"
   physics="debug: false">
